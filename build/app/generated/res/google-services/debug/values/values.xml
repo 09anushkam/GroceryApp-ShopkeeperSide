@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="firebase_database_url" translatable="false">https://minor-eb3de-default-rtdb.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">629625107390</string>
+    <string name="google_api_key" translatable="false">AIzaSyAqK4Lq7OUKi8vyhvYGQR9am1xXv6WYZYg</string>
+    <string name="google_app_id" translatable="false">1:629625107390:android:885a1b8d3ec5d7e25b3fef</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAqK4Lq7OUKi8vyhvYGQR9am1xXv6WYZYg</string>
+    <string name="google_storage_bucket" translatable="false">minor-eb3de.appspot.com</string>
+    <string name="project_id" translatable="false">minor-eb3de</string>
+</resources>
