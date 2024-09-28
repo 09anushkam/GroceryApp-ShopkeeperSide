@@ -1,0 +1,52 @@
+plugins {
+    id "com.android.application"
+    // START: FlutterFire Configuration
+    id 'com.google.gms.google-services'
+    // END: FlutterFire Configuration
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+
+}
+
+android {
+    namespace "com.example.grocery_shop_admin" // Corrected the assignment operator
+    compileSdkVersion flutter.compileSdkVersion // Fixed syntax
+    ndkVersion flutter.ndkVersion
+
+    defaultConfig {
+        applicationId "com.example.grocery_shop_admin"
+        minSdkVersion flutter.minSdkVersion // You should define this in your Flutter settings
+        targetSdkVersion flutter.targetSdkVersion // You should define this in your Flutter settings
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8" // Use string for the jvmTarget
+    }
+
+    buildTypes {
+        release {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+flutter{
+    source '../..'
+}
+
+dependencies{
+    implementation platform('com.google.firebase:firebase-bom:33.3.0')
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'

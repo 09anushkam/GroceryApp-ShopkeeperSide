@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "629625107390",
+    "firebase_url": "https://minor-eb3de-default-rtdb.firebaseio.com",
+    "project_id": "minor-eb3de",
+    "storage_bucket": "minor-eb3de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629625107390:android:885a1b8d3ec5d7e25b3fef",
+        "android_client_info": {
+          "package_name": "com.example.grocery_shop_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqK4Lq7OUKi8vyhvYGQR9am1xXv6WYZYg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
