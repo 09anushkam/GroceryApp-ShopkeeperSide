@@ -9,31 +9,46 @@ class FirebaseService {
 
   // Add a new shop if it doesn't exist
   Future<String?> addShopIfNotExists(String shopName) async {
-    QuerySnapshot shopSnapshot = await _firestore.collection('shops')
-        .where('name', isEqualTo: shopName)
-        .limit(1)
-        .get();
+    try {
+      QuerySnapshot shopSnapshot = await _firestore
+          .collection('shops')
+          .where('name', isEqualTo: shopName)
+          .limit(1)
+          .get();
 
-    if (shopSnapshot.docs.isEmpty) {
-      DocumentReference shopRef = await _firestore.collection('shops').add({
-        'name': shopName,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      return shopRef.id;  // Return the new shop ID
-    } else {
-      return shopSnapshot.docs.first.id;  // Return the existing shop ID
+      if (shopSnapshot.docs.isEmpty) {
+        DocumentReference shopRef = await _firestore.collection('shops').add({
+          'name': shopName,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        return shopRef.id; // Return the new shop ID
+      } else {
+        return shopSnapshot.docs.first.id; // Return the existing shop ID
+      }
+    } catch (e) {
+      print('Error adding/finding shop: $e');
+      return null;
     }
   }
 
   // Add a new product under a shop
   Future<void> addProductToShop(String shopId, Product product) async {
-    await _firestore.collection('shops').doc(shopId).collection('products').add(product.toMap());
+    try {
+      await _firestore
+          .collection('shops')
+          .doc(shopId)
+          .collection('products')
+          .add(product.toMap());
+    } catch (e) {
+      print('Error adding product to shop: $e');
+    }
   }
 
   // Upload an image to Firebase Storage and return its URL
   Future<String?> uploadImageToStorage(File imageFile) async {
     try {
-      final ref = _storage.ref().child('product_images/${DateTime.now().toString()}');
+      final ref =
+      _storage.ref().child('product_images/${DateTime.now().toString()}');
       final uploadTask = await ref.putFile(imageFile);
       return await uploadTask.ref.getDownloadURL();
     } catch (e) {
@@ -43,8 +58,14 @@ class FirebaseService {
   }
 
   // Update an existing product under a shop
-  Future<void> updateProduct(String shopId, String productId, Product product) async {
-    await _firestore.collection('shops').doc(shopId).collection('products').doc(productId).update(product.toMap());
+  Future<void> updateProduct(
+      String shopId, String productId, Product product) async {
+    await _firestore
+        .collection('shops')
+        .doc(shopId)
+        .collection('products')
+        .doc(productId)
+        .update(product.toMap());
   }
 
   // Stream of products under a specific shop
@@ -57,5 +78,5 @@ class FirebaseService {
         .map((snapshot) => snapshot.docs
         .map((doc) => Product.fromMap(doc.data() as Map<String, dynamic>))
         .toList());
-    }
+  }
 }
