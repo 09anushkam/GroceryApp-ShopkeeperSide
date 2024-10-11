@@ -6,7 +6,7 @@ import 'edit_product_screen.dart';
 class ShopProductsScreen extends StatefulWidget {
   final String shopId;
 
-  ShopProductsScreen({required this.shopId});
+  ShopProductsScreen({required this.shopId, required products});
 
   @override
   _ShopProductsScreenState createState() => _ShopProductsScreenState();
