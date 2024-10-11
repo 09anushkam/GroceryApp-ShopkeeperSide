@@ -7,7 +7,7 @@ class ShopCreatedScreen extends StatefulWidget {
   final String shopName;
   final List<Product> products;
 
-  const ShopCreatedScreen({required this.shopName, required this.products});
+  const ShopCreatedScreen({required this.shopName, required this.products, Key? key}) : super(key: key);
 
   @override
   _ShopCreatedScreenState createState() => _ShopCreatedScreenState();
@@ -37,14 +37,23 @@ class _ShopCreatedScreenState extends State<ShopCreatedScreen> {
 
     // Step 2: Add each product to the created shop
     for (var product in widget.products) {
-      await _firebaseService.addProductToShop(shopId, product);
+      await _firebaseService.addProductToShop(
+        shopId,
+        product.name,        // Product name
+        product.imageUrl,    // Product image URL
+        product.price,       // Product price
+        product.quantity,    // Product quantity
+      );
     }
 
     // Step 3: Navigate to the ProductListScreen after adding all products
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => ProductListScreen(products: widget.products, shopName: widget.shopName),
+        builder: (context) => ProductListScreen(
+          products: widget.products,  // Pass the products here
+          shopId: shopId,             // Pass the shopId here
+        ),
       ),
     );
   }
@@ -52,12 +61,12 @@ class _ShopCreatedScreenState extends State<ShopCreatedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Creating Shop'),
-        ),
-        body: Center(
-            child: CircularProgressIndicator(),
-            ),
-        );
-    }
+      appBar: AppBar(
+        title: Text('Creating Shop'),
+      ),
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
 }

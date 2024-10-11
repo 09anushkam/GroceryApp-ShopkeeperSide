@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 class AddProductScreen extends StatefulWidget {
   final List<Product> products;
   final String shopId; // Pass the shop ID dynamically
-  final Product? productToEdit; // Add this for editing functionality
+  final Product? productToEdit; // For editing functionality
 
   AddProductScreen({required this.products, required this.shopId, this.productToEdit});
 
@@ -22,11 +22,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  final FirebaseService _firebaseService = FirebaseService(); // Firebase service instance
+  final FirebaseService _firebaseService = FirebaseService();
 
   XFile? _image;
   final ImagePicker _picker = ImagePicker();
-  bool _isLoading = false; // For loading indicator
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -69,19 +69,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
       }
 
       setState(() {
-        _isLoading = true; // Start loading
+        _isLoading = true;
       });
 
       try {
-        // Step 2: Upload the image
+        // Upload the image
         String? imageUrl = await _firebaseService.uploadImageToStorage(File(_image!.path));
 
         if (imageUrl == null) {
           throw Exception('Image upload failed');
         }
 
-        // Step 3: Create the product
+        // Create or update the product
         Product newProduct = Product(
+          id: widget.productToEdit?.id ?? '',
           name: _productNameController.text,
           category: _categoryController.text,
           imageUrl: imageUrl,
@@ -89,14 +90,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
           price: double.parse(_priceController.text),
         );
 
-        // Step 4: Save the product under the shop in Firestore
-        await _firebaseService.addProductToShop(widget.shopId, newProduct);
+        // Save the product under the shop in Firestore
+        if (widget.productToEdit == null) {
+          await _firebaseService.addProductToShop(
+            widget.shopId,
+            newProduct.name,
+            imageUrl,
+            newProduct.price,
+            newProduct.quantity,
+          );
+        } else {
+          await _firebaseService.updateProductInShop(
+            widget.shopId,
+            widget.productToEdit!.id,
+            newProduct.name,
+            imageUrl,
+            newProduct.price,
+            newProduct.quantity,
+          );
+        }
 
-        // Step 5: Navigate to ProductListScreen with updated data
+        // Navigate to ProductListScreen with updated data
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductListScreen(products: widget.products, shopName: 'Your Shop'),
+            builder: (context) => ProductListScreen(products: widget.products, shopId: widget.shopId),
           ),
         );
       } catch (e) {
@@ -108,7 +126,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         );
       } finally {
         setState(() {
-          _isLoading = false; // Stop loading
+          _isLoading = false;
         });
       }
     }
@@ -117,93 +135,101 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          title: Text(widget.productToEdit == null ? 'Add Product' : 'Edit Product'),
-        ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: _productNameController,
-                      decoration: InputDecoration(labelText: 'Name of the Product'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the product name';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      controller: _categoryController,
-                      decoration: InputDecoration(labelText: 'Category'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the category';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        width: double.infinity,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey),
-                        ),
-                        child: _image == null
-                            ? Center(child: Icon(Icons.camera_alt, size: 50, color: Colors.grey))
-                            : Image.file(File(_image!.path), fit: BoxFit.cover),
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        title: Text(widget.productToEdit == null ? 'Add Product' : 'Edit Product'),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    controller: _productNameController,
+                    decoration: InputDecoration(labelText: 'Name of the Product'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the product name';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    controller: _categoryController,
+                    decoration: InputDecoration(labelText: 'Category'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the category';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      width: double.infinity,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: _image == null
+                          ? Icon(Icons.add_photo_alternate, color: Colors.grey, size: 50)
+                          : Image.file(File(_image!.path), fit: BoxFit.cover),
                     ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      controller: _quantityController,
-                      decoration: InputDecoration(labelText: 'Quantity'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the quantity';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      controller: _priceController,
-                      decoration: InputDecoration(labelText: 'Price'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the price';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    controller: _quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: 'Quantity'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the quantity';
+                      }
+                      if (int.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    controller: _priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: 'Price'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the price';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
                       onPressed: _saveProduct,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      child: Text(widget.productToEdit == null ? 'Add Item' : 'Save Changes'),
+                      child: _isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(widget.productToEdit == null ? 'Add Product' : 'Update Product'),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            if (_isLoading)
-              Center(child: CircularProgressIndicator()), // Display loading indicator
-          ],
-        ));
+          ),
+        ],
+      ),
+    );
   }
 }

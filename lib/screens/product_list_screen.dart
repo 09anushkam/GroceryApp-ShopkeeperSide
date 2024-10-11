@@ -1,131 +1,132 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import '../models/product_model.dart';
-import 'add_product_screen.dart'; // Import your AddProductScreen here
-import 'shop_created_screen.dart';
+import '../services/firebase_service.dart';
+import 'add_product_screen.dart';
+
 
 class ProductListScreen extends StatefulWidget {
   final List<Product> products;
-  final String shopName; // Add shop name
+  final String shopId;
 
-  ProductListScreen({required this.products, required this.shopName});
+
+  ProductListScreen({required this.products, required this.shopId});
+
 
   @override
   _ProductListScreenState createState() => _ProductListScreenState();
 }
 
+
 class _ProductListScreenState extends State<ProductListScreen> {
+  late Future<List<Product>> _productListFuture;
+  final FirebaseService _firebaseService = FirebaseService();
+
+
+  @override
+  void initState() {
+    super.initState();
+    _productListFuture = _fetchProducts(); // Fetch products when screen initializes
+  }
+
+
+  Future<List<Product>> _fetchProducts() async {
+    return await _firebaseService.fetchProductsForShop(widget.shopId);
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    print('Shop Name: ${widget.shopName}');
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          title: Text(widget.shopName, style: TextStyle(color: Colors.white)),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.location_on),
-              onPressed: () {
-                // Location action here
-              },
+      appBar: AppBar(
+        title: Text('Products'),
+        backgroundColor: Colors.green, // Set app bar color to green
+      ),
+      body: FutureBuilder<List<Product>>(
+        future: _productListFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No products found.'));
+          }
+
+
+          final products = snapshot.data!;
+
+
+          return ListView.builder(
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return ListTile(
+                title: Text(product.name),
+                subtitle: Text('Price: ${product.price} | Quantity: ${product.quantity}'),
+                leading: Image.network(product.imageUrl, fit: BoxFit.cover),
+                onTap: () {
+                  // Navigate to edit product
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddProductScreen(
+                        products: widget.products,
+                        shopId: widget.shopId,
+                        productToEdit: product,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align buttons in a row
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddProductScreen(products: widget.products, shopId: widget.shopId),
+                    ),
+                  );
+                },
+                child: Text('Add Items'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green, // Button color
+                  fixedSize: Size(150, 50), // Fixed width and height
+                  textStyle: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+            SizedBox(width: 10), // Space between buttons
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Handle save and next functionality here
+                  // Add your logic for saving products and navigating to the next screen
+                  print("Save and Next button pressed"); // Placeholder for functionality
+                },
+                child: Text('Save and Next'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green, // Button color
+                  fixedSize: Size(150, 50), // Fixed width and height
+                  textStyle: TextStyle(fontSize: 18),
+                ),
+              ),
             ),
           ],
         ),
-        body: widget.products.isEmpty
-            ? Center(child: Text('No products available.'))
-            : ListView.builder(
-          itemCount: widget.products.length,
-          itemBuilder: (context, index) {
-            final product = widget.products[index];
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                leading: product.imageUrl == null || product.imageUrl.isEmpty
-                    ? Icon(Icons.image, size: 50)
-                    : Image.file(File(product.imageUrl), width: 50, height: 50, fit: BoxFit.cover),
-                title: Text(product.name),
-                subtitle: Text('${product.category} - Rs. ${product.price}'),
-                trailing: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  onPressed: () {
-                    // Pass the product to the AddProductScreen for editing
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddProductScreen(
-                          products: widget.products,
-                          productToEdit: product, shopId: '', // Pass the product to be edited
-                        ),
-                      ),
-                    );
-                  },
-                  child: Text('Edit'),
-                ),
-              ),
-            );
-          },
-        ),
-        bottomNavigationBar: BottomAppBar(
-          // child: Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Left Button: Add more items
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate back to AddProductScreen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AddProductScreen(products: widget.products, shopId: '',)),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green, // Green button
-                    // padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  child: Text(
-                    'Add more items',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white), // Set text color here
-                  ),
-                ),
-
-                // Right Button: Save & Next
-                ElevatedButton(
-                  onPressed: () {
-                    // Add logic for Save & Next action
-                    // Navigate to ShopCreatedScreen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ShopCreatedScreen(
-                          products: widget.products,
-                          shopName: widget.shopName,
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green, // Green button
-                    // padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  child: Text(
-                    'Save & Next',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white), // Set text color here
-                  ),
-                ),
-              ],
-            ),
-            // ),
-            ),
-        );
-    }
+      ),
+    );
+  }
 }
+
