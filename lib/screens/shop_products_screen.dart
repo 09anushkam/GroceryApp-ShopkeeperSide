@@ -6,7 +6,7 @@ import 'edit_product_screen.dart';
 class ShopProductsScreen extends StatefulWidget {
   final String shopId;
 
-  ShopProductsScreen({required this.shopId, required products});
+  ShopProductsScreen({required this.shopId, required List<Product> products});
 
   @override
   _ShopProductsScreenState createState() => _ShopProductsScreenState();
@@ -21,17 +21,34 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   void initState() {
     super.initState();
     _shopNameFuture = _fetchShopName();
-    _productListFuture = _fetchProducts(); // Fetch products when screen initializes
+    _productListFuture = _fetchProducts();
   }
 
   Future<String> _fetchShopName() async {
-    // Fetch shop name from Firestore using shopId
     var shopDoc = await _firebaseService.fetchShopById(widget.shopId);
     return shopDoc['name'];
   }
 
   Future<List<Product>> _fetchProducts() async {
     return await _firebaseService.fetchProductsForShop(widget.shopId);
+  }
+
+  // Function to delete a product
+  void _deleteProduct(Product product) async {
+    await _firebaseService.deleteProductFromShop(widget.shopId, product.id);
+    setState(() {
+      _productListFuture = _fetchProducts(); // Update the UI after deletion
+    });
+  }
+
+  // Function to show a success message
+  void _showSuccessMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Shop created successfully! Products added in the shop.'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -85,21 +102,49 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                       title: Text(product.name),
                       subtitle: Text('Price: ${product.price} | Quantity: ${product.quantity}'),
                       leading: Image.network(product.imageUrl, fit: BoxFit.cover),
-                      onTap: () {
-                        // Navigate to edit product
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProductScreen(
-                              products: products,
-                              shopId: widget.shopId,
-                              productToEdit: product,
-                            ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.green),
+                            onPressed: () {
+                              // Navigate to edit product screen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProductScreen(
+                                    products: products,
+                                    shopId: widget.shopId,
+                                    productToEdit: product,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              _deleteProduct(product); // Delete product
+                            },
+                          ),
+                        ],
+                      ),
                     );
                   },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    _showSuccessMessage(); // Show success message on button press
+                  },
+                  child: Text('Save and Finish'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green, // Button color
+                    fixedSize: Size(double.infinity, 50), // Full-width button
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
             ],
