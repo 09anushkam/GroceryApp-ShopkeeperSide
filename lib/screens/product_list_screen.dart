@@ -2,25 +2,22 @@ import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../services/firebase_service.dart';
 import 'add_product_screen.dart';
-
+import 'shop_products_screen.dart'; // Import the new screen
 
 class ProductListScreen extends StatefulWidget {
   final List<Product> products;
   final String shopId;
 
-
   ProductListScreen({required this.products, required this.shopId});
-
 
   @override
   _ProductListScreenState createState() => _ProductListScreenState();
 }
 
-
 class _ProductListScreenState extends State<ProductListScreen> {
   late Future<List<Product>> _productListFuture;
   final FirebaseService _firebaseService = FirebaseService();
-
+  List<Product> _products = []; // State variable to hold fetched products
 
   @override
   void initState() {
@@ -28,18 +25,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
     _productListFuture = _fetchProducts(); // Fetch products when screen initializes
   }
 
-
   Future<List<Product>> _fetchProducts() async {
     return await _firebaseService.fetchProductsForShop(widget.shopId);
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Products'),
-        backgroundColor: Colors.green, // Set app bar color to green
+        backgroundColor: Colors.green,
       ),
       body: FutureBuilder<List<Product>>(
         future: _productListFuture,
@@ -54,14 +49,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
             return Center(child: Text('No products found.'));
           }
 
-
-          final products = snapshot.data!;
-
+          // Store fetched products in the state variable
+          _products = snapshot.data!;
 
           return ListView.builder(
-            itemCount: products.length,
+            itemCount: _products.length,
             itemBuilder: (context, index) {
-              final product = products[index];
+              final product = _products[index];
               return ListTile(
                 title: Text(product.name),
                 subtitle: Text('Price: ${product.price} | Quantity: ${product.quantity}'),
@@ -72,9 +66,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => AddProductScreen(
-                        products: widget.products,
                         shopId: widget.shopId,
                         productToEdit: product,
+                        products: [], // Pass products as needed
                       ),
                     ),
                   );
@@ -87,7 +81,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align buttons in a row
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
               child: ElevatedButton(
@@ -95,30 +89,40 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AddProductScreen(products: widget.products, shopId: widget.shopId),
+                      builder: (context) => AddProductScreen(
+                        shopId: widget.shopId,
+                        products: [], // Pass products as needed
+                      ),
                     ),
                   );
                 },
                 child: Text('Add Items'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // Button color
-                  fixedSize: Size(150, 50), // Fixed width and height
+                  backgroundColor: Colors.green,
+                  fixedSize: Size(150, 50),
                   textStyle: TextStyle(fontSize: 18),
                 ),
               ),
             ),
-            SizedBox(width: 10), // Space between buttons
+            SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  // Handle save and next functionality here
-                  // Add your logic for saving products and navigating to the next screen
-                  print("Save and Next button pressed"); // Placeholder for functionality
+                  // Navigate to the Shop Products screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShopProductsScreen(
+                        shopId: widget.shopId,
+                        products: _products, // Use the state variable
+                      ),
+                    ),
+                  );
                 },
                 child: Text('Save and Next'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // Button color
-                  fixedSize: Size(150, 50), // Fixed width and height
+                  backgroundColor: Colors.green,
+                  fixedSize: Size(150, 50),
                   textStyle: TextStyle(fontSize: 18),
                 ),
               ),
@@ -129,4 +133,3 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 }
-
