@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../services/firebase_service.dart';
 import 'edit_product_screen.dart';
+import 'registration_screen.dart'; // Import the home page
 
 class ShopProductsScreen extends StatefulWidget {
   final String shopId;
@@ -41,14 +42,22 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
     });
   }
 
-  // Function to show a success message
-  void _showSuccessMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Shop created successfully! Products added in the shop.'),
-        backgroundColor: Colors.green,
-      ),
+  // Function to show a success message and redirect
+  void _showSuccessMessageAndRedirect() {
+    final snackBar = SnackBar(
+      content: Text('Shop created successfully! Products added to the shop.'),
+      duration: Duration(seconds: 3),
     );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    // Wait for 3 seconds before redirecting
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => RegistrationScreen()),
+      );
+    });
   }
 
   @override
@@ -134,15 +143,13 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton(
-                  onPressed: () {
-                    _showSuccessMessage(); // Show success message on button press
-                  },
+                  onPressed: _showSuccessMessageAndRedirect,
                   child: Text('Save and Finish'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green, // Button color
-                    fixedSize: Size(double.infinity, 50), // Full-width button
+                    backgroundColor: Colors.green,
+                    fixedSize: Size(double.infinity, 50), // Full width button
                     textStyle: TextStyle(fontSize: 18),
                   ),
                 ),
