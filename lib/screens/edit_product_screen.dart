@@ -36,13 +36,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   void _saveChanges() async {
-    // Get updated values from the controllers
     String updatedName = _nameController.text;
     String updatedImageUrl = widget.productToEdit.imageUrl; // Assuming the image URL is not changed
     double updatedPrice = double.parse(_priceController.text);
     int updatedQuantity = int.parse(_quantityController.text);
 
-    // Update the product in Firestore
     await _firebaseService.updateProductInShop(
       widget.shopId,
       widget.productToEdit.id,
