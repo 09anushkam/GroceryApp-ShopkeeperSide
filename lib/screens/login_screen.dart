@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/custom_text_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // For displaying success message
+import 'registration_screen.dart'; // Import the registration screen
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,41 +9,24 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  String? _validateUsername(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Username is required';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Password is required';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters long';
-    }
-    return null;
-  }
-
-  void _login() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // Perform login action
-      Navigator.pushNamed(context, '/registration');
+  // Function to handle login
+  void _login() async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      // If login is successful, show toast and navigate to the registration screen
+      Fluttertoast.showToast(msg: 'Logged in successfully!');
+      Navigator.pushNamed(context, '/registration'); // Navigate to RegistrationScreen
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Login failed. Please try again.');
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.green,
         title: Row(
           children: [
-            Image.asset('assets/logo.png', height: 40), // Assuming logo exists in assets
+            Image.asset('assets/logo.png', height: 40),
             SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,55 +45,69 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
+        leading: Icon(Icons.menu),
         actions: [
           IconButton(
             icon: Icon(Icons.location_on),
             onPressed: () {
-              // Location manual action
+              // Location update action
             },
           ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(height: 20),
-              Center(
-                child: Text(
-                  'Login - Admin',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Login',
+              textAlign: TextAlign.center, // Center align the text
+              style: TextStyle(
+                fontSize: 32, // Larger font size
+                fontWeight: FontWeight.bold, // Bold text
+              ),
+            ),
+            SizedBox(height: 20), // Bottom padding for spacing
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                hintText: 'Enter your email',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              SizedBox(height: 40),
-              CustomTextField(
-                controller: _usernameController,
-                labelText: 'Username -',
-                validator: _validateUsername,
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              SizedBox(height: 20),
-              CustomTextField(
-                controller: _passwordController,
-                labelText: 'Password -',
-                obscureText: true,
-                validator: _validatePassword,
+            ),
+            SizedBox(height: 40), // Increase space to move the button downwards
+            ElevatedButton(
+              onPressed: _login,
+              child: Text(
+                'Login',
+                style: TextStyle(color: Colors.white, fontSize: 18), // White text inside the button
               ),
-              SizedBox(height: 40),
-              CustomButton(
-                buttonText: 'Login',
-                onPressed: _login,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Green button color
+                padding: EdgeInsets.symmetric(vertical: 16), // Vertical padding for button
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                minimumSize: Size(double.infinity, 50), // Make button wide
               ),
-              SizedBox(height: 20),
-              Text(
-                'New shopkeeper? Contact -----',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
