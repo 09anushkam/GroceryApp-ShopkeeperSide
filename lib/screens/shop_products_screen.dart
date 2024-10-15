@@ -27,7 +27,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
 
   Future<String> _fetchShopName() async {
     var shopDoc = await _firebaseService.fetchShopById(widget.shopId);
-    return shopDoc['name'];
+    return shopDoc?['name'];
   }
 
   Future<List<Product>> _fetchProducts() async {
