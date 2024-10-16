@@ -146,7 +146,10 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton(
                   onPressed: _showSuccessMessageAndRedirect,
-                  child: Text('Save and Finish'),
+                  child: Text(
+                    'Save and Finish',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     fixedSize: Size(double.infinity, 50), // Full width button

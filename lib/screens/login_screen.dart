@@ -113,3 +113,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+// login failed! please try again. that's all i can see even if my credentials of firebase are correct.

@@ -121,7 +121,10 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                   ElevatedButton(
                     onPressed: _saveShopDetails,
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                    child: Text('Proceed to Add Products'),
+                    child: Text(
+                      "Proceed to Add Products",
+                      style: TextStyle(color: Colors.white), // Set the text color to white
+                    ),
                   ),
                 ],
               ),

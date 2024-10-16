@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.grocery_shop_admin"
-        minSdkVersion flutter.minSdkVersion // You should define this in your Flutter settings
+        minSdkVersion 23 // You should define this in your Flutter settings
         targetSdkVersion flutter.targetSdkVersion // You should define this in your Flutter settings
         versionCode 1
         versionName "1.0"

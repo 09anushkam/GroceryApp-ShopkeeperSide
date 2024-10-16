@@ -96,7 +96,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     ),
                   );
                 },
-                child: Text('Add Items'),
+                child: Text(
+                  'Add Items',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   fixedSize: Size(150, 50),
@@ -119,7 +122,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     ),
                   );
                 },
-                child: Text('Save and Next'),
+                child: Text(
+                  'Save and Next',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   fixedSize: Size(150, 50),

@@ -219,9 +219,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _saveProduct,
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                       child: _isLoading
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text(widget.productToEdit == null ? 'Add Product' : 'Update Product'),
+                          : Text(
+                        widget.productToEdit == null ? 'Add Product' : 'Update Product',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 ],
