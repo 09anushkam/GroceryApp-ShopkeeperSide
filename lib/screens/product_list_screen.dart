@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../services/firebase_service.dart';
 import 'add_product_screen.dart';
-import 'shop_products_screen.dart'; // Import the new screen
+import 'shop_products_screen.dart'; // Import the Shop Products screen
 
 class ProductListScreen extends StatefulWidget {
   final List<Product> products;
@@ -68,7 +68,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       builder: (context) => AddProductScreen(
                         shopId: widget.shopId,
                         productToEdit: product,
-                        products: [], // Pass products as needed
+                        products: _products, // Pass products as needed
                       ),
                     ),
                   );
@@ -91,7 +91,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     MaterialPageRoute(
                       builder: (context) => AddProductScreen(
                         shopId: widget.shopId,
-                        products: [], // Pass products as needed
+                        products: _products, // Pass products as needed
                       ),
                     ),
                   );

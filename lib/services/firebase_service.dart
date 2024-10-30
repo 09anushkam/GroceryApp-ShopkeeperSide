@@ -1,35 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // Import FirebaseAuth for user info
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import '../models/product_model.dart';
+import '../models/shop_model.dart';
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;  // FirebaseAuth instance
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Add Shop if it doesn't exist, and return the shop ID
   Future<String?> addShopIfNotExists(String shopName) async {
     try {
-      String? userId = _auth.currentUser?.uid;  // Get current user ID
+      String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('No user logged in');
 
       QuerySnapshot query = await _firestore.collection('shops')
           .where('name', isEqualTo: shopName)
-          .where('userId', isEqualTo: userId)  // Check for existing shop by the logged-in user
+          .where('userId', isEqualTo: userId)
           .limit(1)
           .get();
 
       if (query.docs.isNotEmpty) {
-        return query.docs.first.id; // Return existing shop ID
+        return query.docs.first.id;
       } else {
         DocumentReference newShopRef = await _firestore.collection('shops').add({
           'name': shopName,
-          'userId': userId,  // Associate shop with the logged-in user
+          'userId': userId,
           'createdAt': FieldValue.serverTimestamp(),
         });
-        return newShopRef.id; // Return newly created shop ID
+        return newShopRef.id;
       }
     } catch (e) {
       print('Error adding or checking shop: $e');
@@ -56,7 +57,7 @@ class FirebaseService {
   // Add product to a specific shop
   Future<void> addProductToShop(String shopId, String productName, String imageUrl, double price, int quantity) async {
     try {
-      String? userId = _auth.currentUser?.uid;  // Get current user ID
+      String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('No user logged in');
 
       await _firestore.collection('shops').doc(shopId).collection('products').add({
@@ -64,7 +65,7 @@ class FirebaseService {
         'imageUrl': imageUrl,
         'price': price,
         'quantity': quantity,
-        'userId': userId,  // Associate product with the logged-in user
+        'userId': userId,
         'createdAt': FieldValue.serverTimestamp(),
       });
       print('Product added successfully to shop: $shopId');
@@ -73,15 +74,15 @@ class FirebaseService {
     }
   }
 
-  // Fetch products for a specific shop (for the logged-in user)
+  // Fetch products for a specific shop
   Future<List<Product>> fetchProductsForShop(String shopId) async {
     try {
-      String? userId = _auth.currentUser?.uid;  // Get current user ID
+      String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('No user logged in');
 
       QuerySnapshot querySnapshot = await _firestore.collection('shops').doc(shopId)
           .collection('products')
-          .where('userId', isEqualTo: userId)  // Fetch only products added by the logged-in user
+          .where('userId', isEqualTo: userId)
           .get();
 
       return querySnapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
@@ -92,16 +93,16 @@ class FirebaseService {
   }
 
   // Fetch shops only for the logged-in user
-  Future<List<DocumentSnapshot>> fetchShopsForUser() async {
+  Future<List<Shop>> fetchShopsForUser() async {
     try {
-      String? userId = _auth.currentUser?.uid;  // Get current user ID
+      String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('No user logged in');
 
-      QuerySnapshot querySnapshot = await _firestore.collection('shops')
-          .where('userId', isEqualTo: userId)  // Fetch only shops created by the logged-in user
+      QuerySnapshot snapshot = await _firestore.collection('shops')
+          .where('userId', isEqualTo: userId)
           .get();
 
-      return querySnapshot.docs;
+      return snapshot.docs.map((doc) => Shop.fromFirestore(doc)).toList();
     } catch (e) {
       print('Error fetching shops: $e');
       return [];
@@ -109,16 +110,15 @@ class FirebaseService {
   }
 
   // Fetch shop by ID (only if it belongs to the logged-in user)
-  Future<DocumentSnapshot?> fetchShopById(String shopId) async {
+  Future<Shop?> fetchShopById(String shopId) async {
     try {
-      String? userId = _auth.currentUser?.uid;  // Get current user ID
+      String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('No user logged in');
 
       DocumentSnapshot shop = await _firestore.collection('shops').doc(shopId).get();
 
-      // Ensure the shop belongs to the logged-in user
       if (shop.exists && (shop.data() as Map<String, dynamic>?)?['userId'] == userId) {
-        return shop;
+        return Shop.fromFirestore(shop);
       } else {
         throw Exception('Shop does not belong to the logged-in user.');
       }
@@ -131,10 +131,9 @@ class FirebaseService {
   // Delete product from a shop (only if it belongs to the logged-in user)
   Future<void> deleteProductFromShop(String shopId, String productId) async {
     try {
-      String? userId = _auth.currentUser?.uid;  // Get current user ID
+      String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('No user logged in');
 
-      // Ensure the product belongs to the logged-in user
       DocumentSnapshot product = await _firestore.collection('shops')
           .doc(shopId)
           .collection('products')
@@ -155,10 +154,9 @@ class FirebaseService {
   // Update product in a shop (only if it belongs to the logged-in user)
   Future<void> updateProductInShop(String shopId, String productId, String name, String imageUrl, double price, int quantity) async {
     try {
-      String? userId = _auth.currentUser?.uid;  // Get current user ID
+      String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('No user logged in');
 
-      // Ensure the product belongs to the logged-in user
       DocumentSnapshot product = await _firestore.collection('shops')
           .doc(shopId)
           .collection('products')

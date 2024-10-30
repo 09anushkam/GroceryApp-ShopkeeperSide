@@ -1,8 +1,11 @@
+// screens/shop_products_screen.dart
+
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
+import '../models/shop_model.dart';
 import '../services/firebase_service.dart';
 import 'edit_product_screen.dart';
-import 'registration_screen.dart'; // Import the home page
+import 'registration_screen.dart';
 
 class ShopProductsScreen extends StatefulWidget {
   final String shopId;
@@ -26,8 +29,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   }
 
   Future<String> _fetchShopName() async {
-    var shopDoc = await _firebaseService.fetchShopById(widget.shopId);
-    return shopDoc?['name'];
+    Shop? shop = await _firebaseService.fetchShopById(widget.shopId);
+    return shop?.name ?? 'Shop Name';
   }
 
   Future<List<Product>> _fetchProducts() async {
