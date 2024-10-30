@@ -205,7 +205,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             CustomButton(
               buttonText: 'Add Service',
               onPressed: () {
-                // Action to add service
+                Navigator.pushNamed(context, '/add-service');
               },
             ),
             SizedBox(height: 20),
